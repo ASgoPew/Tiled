@@ -46,10 +46,30 @@ namespace Tiled
         public override string Name => "Tiled";
         public override Version Version => typeof(TiledPlugin).Assembly.GetName().Version;
 
+        public static int maxTilesX = 8401;
+        public static int maxTilesY = 2401;
+
         public bool AcceptedWarning { get; set; }
 
         public TiledPlugin(Main game) : base(game)
         {
+            var args = Environment.GetCommandLineArgs();
+            var argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-maxtilesx");
+            if (argumentIndex > -1)
+            {
+                argumentIndex++;
+                if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out maxTilesX))
+                    Console.WriteLine("Please provide a maxTilesX integer value");
+            }
+
+            argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-maxtilesy");
+            if (argumentIndex > -1)
+            {
+                argumentIndex++;
+                if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out maxTilesY))
+                    Console.WriteLine("Please provide a maxTilesY integer value");
+            }
+            Console.WriteLine($"Tiled: maxTilesX: {maxTilesX}, maxTilesY: {maxTilesY}");
         }
 
         public override void Initialize()
@@ -61,24 +81,14 @@ namespace Tiled
             if (argumentIndex > -1)
             {
                 argumentIndex++;
-
                 if (argumentIndex < args.Length)
-                {
                     tileImplementation = args[argumentIndex];
-                }
                 else
-                {
                     Console.WriteLine("Please provide a tile implementation after -tiled. eg -tiled 1d");
-                }
             }
-
             var provider = ParseProviderName(tileImplementation);
-            if (provider == null)
-            {
-                provider = new OneDimensionTileProvider();
-            }
-            SetProvider(provider);
-
+            if (provider != null)
+                SetProvider(provider);
             Console.WriteLine($"Using tile provider: {Terraria.Main.tile.GetType().Name}");
         }
 

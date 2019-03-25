@@ -107,7 +107,9 @@ namespace Tiled.OneDimension
 
         public OneDimensionTileReference(StructTile[] data, int x, int y) // not shorts because I rather save a number of convert opcodes
         {
-            this.offset = Terraria.Main.maxTilesY * x + y;
+            this.offset = TiledPlugin.maxTilesY * x + y;
+            if (this.offset < 0)
+                this.offset = 0;
             this.data = data;
         }
 

@@ -12,21 +12,15 @@ namespace Tiled.OneDimension
 
         public int Width => this._width;
         public int Height => this._height;
+        public int Size => this.data.Length;
 
         public OneDimensionTileProvider()
         {
-            data = new StructTile[(Main.maxTilesX + 1) * (Main.maxTilesY + 1)];
+            data = new StructTile[(TiledPlugin.maxTilesX + 1) * (TiledPlugin.maxTilesY + 1)];
 
-            this._width = Main.maxTilesX + 1;
-            this._height = Main.maxTilesY + 1;
-        }
-
-        public OneDimensionTileProvider(int width, int height)
-        {
-            data = new StructTile[(width + 1) * (height + 1)];
-
-            this._width = width + 1;
-            this._height = height + 1;
+            this._width = TiledPlugin.maxTilesX + 1;
+            this._height = TiledPlugin.maxTilesY + 1;
+            Console.WriteLine($"1dTileProvider: {Width}, {Height}");
         }
 
         public ITile this[int x, int y]
