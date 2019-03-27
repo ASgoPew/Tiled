@@ -48,6 +48,10 @@ namespace Tiled
 
         public static int maxTilesX = 8401;
         public static int maxTilesY = 2401;
+        public static int offsetX = 0;
+        public static int offsetY = 0;
+        public static int requiredOffsetX = 0;
+        public static int requiredOffsetY = 0;
 
         public bool AcceptedWarning { get; set; }
 
@@ -70,10 +74,45 @@ namespace Tiled
                     Console.WriteLine("Please provide a maxTilesY integer value");
             }
             Console.WriteLine($"Tiled: maxTilesX: {maxTilesX}, maxTilesY: {maxTilesY}");
+
+            argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-offsetx");
+            if (argumentIndex > -1)
+            {
+                argumentIndex++;
+                if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out requiredOffsetX))
+                    Console.WriteLine("Please provide a offsetX integer value");
+            }
+
+            argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-offsety");
+            if (argumentIndex > -1)
+            {
+                argumentIndex++;
+                if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out requiredOffsetY))
+                    Console.WriteLine("Please provide a offsetY integer value");
+            }
+            Console.WriteLine($"Tiled: offsetX: {requiredOffsetX}, offsetY: {requiredOffsetY}");
+        }
+
+        public static void OnGamePostInitialize(EventArgs args)
+        {
+            offsetX = requiredOffsetX;
+            offsetY = requiredOffsetY;
+        }
+
+        public static void OnPostLoadWorld(bool fromCloud)
+        {
+            // Idk why but server don't send me outofmap sections
+            // even tho I set maxTilesX,Y here before initializing RemoteClient.TileSection
+            Main.maxTilesX = TiledPlugin.maxTilesX + TiledPlugin.requiredOffsetX;
+            Main.maxTilesY = TiledPlugin.maxTilesY + TiledPlugin.requiredOffsetY;
+            Console.WriteLine($"maxTilesX: {Main.maxTilesX}, {Main.maxTilesY}");
         }
 
         public override void Initialize()
         {
+            ServerApi.Hooks.GamePostInitialize.Register(this, OnGamePostInitialize);
+            OTAPI.Hooks.World.IO.PostLoadWorld += OnPostLoadWorld;
+
             string tileImplementation = null;
 
             var args = Environment.GetCommandLineArgs();

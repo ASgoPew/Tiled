@@ -27,12 +27,12 @@ namespace Tiled.OneDimension
         {
             get
             {
-                return new OneDimensionTileReference(data, x, y);
+                return new OneDimensionTileReference(data, x - TiledPlugin.offsetX, y - TiledPlugin.offsetY);
             }
 
             set
             {
-                (new OneDimensionTileReference(data, x, y)).CopyFrom(value);
+                (new OneDimensionTileReference(data, x - TiledPlugin.offsetX, y - TiledPlugin.offsetY)).CopyFrom(value);
             }
         }
 
