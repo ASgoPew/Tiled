@@ -103,12 +103,6 @@ namespace Tiled
             Console.WriteLine($"Tiled: offsetX: {requiredOffsetX}, offsetY: {requiredOffsetY}");
         }
 
-        public static void OnGamePostInitialize(EventArgs args)
-        {
-            offsetX = requiredOffsetX;
-            offsetY = requiredOffsetY;
-        }
-
         public static void OnPostLoadWorld(bool fromCloud)
         {
             realMaxTilesX = Main.maxTilesX;
@@ -121,12 +115,10 @@ namespace Tiled
             Provider.Width = realMaxTilesX;
             Provider.Height = realMaxTilesY;
 
-            // Idk why but server don't send me outofmap sections
-            // even tho I set maxTilesX,Y here before initializing RemoteClient.TileSection
-            //Main.maxTilesX = TiledPlugin.maxTilesX + TiledPlugin.requiredOffsetX;
-            //Main.maxTilesY = TiledPlugin.maxTilesY + TiledPlugin.requiredOffsetY;
             Main.maxTilesX = 8401;
             Main.maxTilesY = 2401;
+            offsetX = requiredOffsetX;
+            offsetY = requiredOffsetY;
             WorldGen.setWorldSize();
             Console.WriteLine($"maxTilesX,Y: {Main.maxTilesX}, {Main.maxTilesY}");
         }
@@ -150,7 +142,7 @@ namespace Tiled
 
         public override void Initialize()
         {
-            ServerApi.Hooks.GamePostInitialize.Register(this, OnGamePostInitialize);
+            //ServerApi.Hooks.GamePostInitialize.Register(this, OnGamePostInitialize);
             OTAPI.Hooks.World.IO.PostLoadWorld += OnPostLoadWorld;
             OTAPI.Hooks.World.IO.PreSaveWorld += OnPreSaveWorld;
             OTAPI.Hooks.World.IO.PostSaveWorld += OnPostSaveWorld;
@@ -174,6 +166,17 @@ namespace Tiled
 
             //Provider = new OneDimensionTileProvider();
             //SetProvider(Provider);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                OTAPI.Hooks.World.IO.PostLoadWorld -= OnPostLoadWorld;
+                OTAPI.Hooks.World.IO.PreSaveWorld -= OnPreSaveWorld;
+                OTAPI.Hooks.World.IO.PostSaveWorld -= OnPostSaveWorld;
+            }
+            base.Dispose(disposing);
         }
 
         /*void AddCommands()
