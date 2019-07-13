@@ -25,22 +25,22 @@ namespace Tiled.OneDimension
         {
             get
             {
-                //int relativeX = x - TiledPlugin.offsetX, relativeY = y - TiledPlugin.offsetY;
-                //return relativeX >= 0 && relativeX < TiledPlugin.realMaxTilesX && relativeY >= 0 && relativeY < TiledPlugin.realMaxTilesY
-                //    ? new OneDimensionTileReference(data, relativeX, relativeY)
-                //    : new OneDimensionTileReference(TiledPlugin.BorderTiles, 0, 0);
+                int relativeX = x - TiledPlugin.offsetX, relativeY = y - TiledPlugin.offsetY;
+                return relativeX >= 0 && relativeX < TiledPlugin.realMaxTilesX && relativeY >= 0 && relativeY < TiledPlugin.realMaxTilesY
+                    ? new OneDimensionTileReference(data, relativeX, relativeY)
+                    : new OneDimensionTileReference(TiledPlugin.BorderTiles, 0, 0);
                 // Cyclic world:
-                return new OneDimensionTileReference(data, x % TiledPlugin.realMaxTilesX, y % TiledPlugin.realMaxTilesY);
+                //return new OneDimensionTileReference(data, x % TiledPlugin.realMaxTilesX, y % TiledPlugin.realMaxTilesY);
             }
 
             set
             {
-                //int relativeX = x - TiledPlugin.offsetX, relativeY = y - TiledPlugin.offsetY;
-                //if (relativeX >= 0 && relativeX < TiledPlugin.realMaxTilesX && relativeY >= 0 && relativeY < TiledPlugin.realMaxTilesY)
-                //    (new OneDimensionTileReference(data, relativeX, relativeY)).CopyFrom(value);
+                int relativeX = x - TiledPlugin.offsetX, relativeY = y - TiledPlugin.offsetY;
+                if (relativeX >= 0 && relativeX < TiledPlugin.realMaxTilesX && relativeY >= 0 && relativeY < TiledPlugin.realMaxTilesY)
+                    (new OneDimensionTileReference(data, relativeX, relativeY)).CopyFrom(value);
 
                 // Cyclic world:
-                (new OneDimensionTileReference(data, x % TiledPlugin.realMaxTilesX, y % TiledPlugin.realMaxTilesY)).CopyFrom(value);
+                //(new OneDimensionTileReference(data, x % TiledPlugin.realMaxTilesX, y % TiledPlugin.realMaxTilesY)).CopyFrom(value);
             }
         }
 
