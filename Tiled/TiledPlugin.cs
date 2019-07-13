@@ -1,5 +1,7 @@
-﻿using OTAPI.Tile;
+﻿using OTAPI;
+using OTAPI.Tile;
 using System;
+using System.Threading;
 using Terraria;
 using TerrariaApi.Server;
 using Tiled.OneDimension;
@@ -46,36 +48,40 @@ namespace Tiled
         public override string Name => "Tiled";
         public override Version Version => typeof(TiledPlugin).Assembly.GetName().Version;
 
-        public static int maxTilesX = 8401;
-        public static int maxTilesY = 2401;
+        public static int realMaxTilesX = 8401;
+        public static int realMaxTilesY = 2401;
+        //public static int maxTilesX = 8401;
+        //public static int maxTilesY = 2401;
         public static int offsetX = 0;
         public static int offsetY = 0;
         public static int requiredOffsetX = 0;
         public static int requiredOffsetY = 0;
+
+        public static OneDimensionTileProvider Provider;
 
         public bool AcceptedWarning { get; set; }
 
         public TiledPlugin(Main game) : base(game)
         {
             var args = Environment.GetCommandLineArgs();
-            var argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-maxtilesx");
-            if (argumentIndex > -1)
-            {
-                argumentIndex++;
-                if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out maxTilesX))
-                    Console.WriteLine("Please provide a maxTilesX integer value");
-            }
+            //var argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-maxtilesx");
+            //if (argumentIndex > -1)
+            //{
+            //    argumentIndex++;
+            //    if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out maxTilesX))
+            //        Console.WriteLine("Please provide a maxTilesX integer value");
+            //}
 
-            argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-maxtilesy");
-            if (argumentIndex > -1)
-            {
-                argumentIndex++;
-                if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out maxTilesY))
-                    Console.WriteLine("Please provide a maxTilesY integer value");
-            }
-            Console.WriteLine($"Tiled: maxTilesX: {maxTilesX}, maxTilesY: {maxTilesY}");
+            //argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-maxtilesy");
+            //if (argumentIndex > -1)
+            //{
+            //    argumentIndex++;
+            //    if (argumentIndex >= args.Length || !Int32.TryParse(args[argumentIndex], out maxTilesY))
+            //        Console.WriteLine("Please provide a maxTilesY integer value");
+            //}
+            //Console.WriteLine($"Tiled: maxTilesX: {maxTilesX}, maxTilesY: {maxTilesY}");
 
-            argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-offsetx");
+            int argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-offsetx");
             if (argumentIndex > -1)
             {
                 argumentIndex++;
@@ -101,34 +107,69 @@ namespace Tiled
 
         public static void OnPostLoadWorld(bool fromCloud)
         {
+            realMaxTilesX = Main.maxTilesX;
+            realMaxTilesY = Main.maxTilesY;
+            Console.WriteLine($"REAL maxTilesX, maxTilesY: {realMaxTilesX}, {realMaxTilesY}");
+
+            Provider = new OneDimensionTileProvider();
+            SetProvider(Provider);
+
+            Provider.Width = realMaxTilesX;
+            Provider.Height = realMaxTilesY;
+
             // Idk why but server don't send me outofmap sections
             // even tho I set maxTilesX,Y here before initializing RemoteClient.TileSection
-            Main.maxTilesX = TiledPlugin.maxTilesX + TiledPlugin.requiredOffsetX;
-            Main.maxTilesY = TiledPlugin.maxTilesY + TiledPlugin.requiredOffsetY;
-            Console.WriteLine($"maxTilesX: {Main.maxTilesX}, {Main.maxTilesY}");
+            //Main.maxTilesX = TiledPlugin.maxTilesX + TiledPlugin.requiredOffsetX;
+            //Main.maxTilesY = TiledPlugin.maxTilesY + TiledPlugin.requiredOffsetY;
+            Main.maxTilesX = 8401;
+            Main.maxTilesY = 2401;
+            WorldGen.setWorldSize();
+            Console.WriteLine($"maxTilesX,Y: {Main.maxTilesX}, {Main.maxTilesY}");
+        }
+
+        public static HookResult OnPreSaveWorld(ref bool cloud, ref bool resetTime)
+        {
+            offsetX = 0;
+            offsetY = 0;
+            Main.maxTilesX = realMaxTilesX;
+            Main.maxTilesY = realMaxTilesY;
+            return HookResult.Continue;
+        }
+
+        public static void OnPostSaveWorld(bool cloud, bool resetTime)
+        {
+            offsetX = requiredOffsetX;
+            offsetY = requiredOffsetY;
+            Main.maxTilesX = 8401;
+            Main.maxTilesY = 2401;
         }
 
         public override void Initialize()
         {
             ServerApi.Hooks.GamePostInitialize.Register(this, OnGamePostInitialize);
             OTAPI.Hooks.World.IO.PostLoadWorld += OnPostLoadWorld;
+            OTAPI.Hooks.World.IO.PreSaveWorld += OnPreSaveWorld;
+            OTAPI.Hooks.World.IO.PostSaveWorld += OnPostSaveWorld;
 
-            string tileImplementation = null;
+            //string tileImplementation = null;
 
-            var args = Environment.GetCommandLineArgs();
-            var argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-tiled");
-            if (argumentIndex > -1)
-            {
-                argumentIndex++;
-                if (argumentIndex < args.Length)
-                    tileImplementation = args[argumentIndex];
-                else
-                    Console.WriteLine("Please provide a tile implementation after -tiled. eg -tiled 1d");
-            }
-            var provider = ParseProviderName(tileImplementation);
-            if (provider != null)
-                SetProvider(provider);
-            Console.WriteLine($"Using tile provider: {Terraria.Main.tile.GetType().Name}");
+            //var args = Environment.GetCommandLineArgs();
+            //var argumentIndex = Array.FindIndex(args, x => x.ToLower() == "-tiled");
+            //if (argumentIndex > -1)
+            //{
+            //    argumentIndex++;
+            //    if (argumentIndex < args.Length)
+            //        tileImplementation = args[argumentIndex];
+            //    else
+            //        Console.WriteLine("Please provide a tile implementation after -tiled. eg -tiled 1d");
+            //}
+            //var provider = ParseProviderName(tileImplementation);
+            //if (provider != null)
+            //    SetProvider(provider);
+            //Console.WriteLine($"Using tile provider: {Terraria.Main.tile.GetType().Name}");
+
+            //Provider = new OneDimensionTileProvider();
+            //SetProvider(Provider);
         }
 
         /*void AddCommands()
@@ -168,7 +209,7 @@ namespace Tiled
             }, "tiled"));
         }*/
 
-        public ITileCollection ParseProviderName(string name)
+        public static ITileCollection ParseProviderName(string name)
         {
             if (name == null)
                 return null;
@@ -193,7 +234,7 @@ namespace Tiled
             return null;
         }
 
-        public bool SetProvider(ITileCollection provider)
+        public static bool SetProvider(ITileCollection provider)
         {
             //if (!AcceptedWarning)
             //{
@@ -209,8 +250,10 @@ namespace Tiled
             //}
 
             //todo transfer + unload if during game
-            if (Netplay.IsServerRunning)
-            {
+            //Console.WriteLine($"COPING OLD TILES ??????????????????????????? {Netplay.IsServerRunning}, {Main.tile != null}");
+            //Thread.Sleep(10000);
+            //if (Netplay.IsServerRunning)
+            //{
                 if (Terraria.Main.tile != null)
                 {
                     int x = 0;
@@ -219,7 +262,6 @@ namespace Tiled
                     {
                         // trigger our internals to generate the data store
                         provider[0, 0].ClearTile();
-
                         x = 0;
                         for (x = 0; x < Terraria.Main.maxTilesX; x++)
                         {
@@ -236,7 +278,7 @@ namespace Tiled
                         return false;
                     }
                 }
-            }
+            //}
 
             var previous = Terraria.Main.tile as IDisposable;
             Terraria.Main.tile = provider;

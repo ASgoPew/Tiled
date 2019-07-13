@@ -6,20 +6,18 @@ namespace Tiled.OneDimension
 {
     public class OneDimensionTileProvider : ITileCollection, IDisposable
     {
-        private StructTile[] data;
-        private int _width;
-        private int _height;
+        public StructTile[] data;
 
-        public int Width => this._width;
-        public int Height => this._height;
+        public int Width { get; internal set; }
+        public int Height { get; internal set; }
         public int Size => this.data.Length;
 
         public OneDimensionTileProvider()
         {
-            data = new StructTile[(TiledPlugin.maxTilesX + 1) * (TiledPlugin.maxTilesY + 1)];
+            data = new StructTile[TiledPlugin.realMaxTilesX * TiledPlugin.realMaxTilesY];
 
-            this._width = TiledPlugin.maxTilesX + 1;
-            this._height = TiledPlugin.maxTilesY + 1;
+            //this._width = TiledPlugin.realMaxTilesX;
+            //this._height = TiledPlugin.realMaxTilesY;
             Console.WriteLine($"1dTileProvider: {Width}, {Height}");
         }
 
@@ -28,6 +26,8 @@ namespace Tiled.OneDimension
             get
             {
                 return new OneDimensionTileReference(data, x - TiledPlugin.offsetX, y - TiledPlugin.offsetY);
+                // Cyclic world:
+                //return new OneDimensionTileReference(data, x % TiledPlugin.realMaxTilesX, y % TiledPlugin.realMaxTilesY);
             }
 
             set

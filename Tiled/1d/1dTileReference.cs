@@ -107,7 +107,7 @@ namespace Tiled.OneDimension
 
         public OneDimensionTileReference(StructTile[] data, int x, int y) // not shorts because I rather save a number of convert opcodes
         {
-            offset = TiledPlugin.maxTilesY * x + y;
+            offset = TiledPlugin.realMaxTilesY * x + y;
             if (offset < 0 || offset >= data.Length)
                 offset = 0;
             this.data = data;
