@@ -56,6 +56,10 @@ namespace Tiled
         public static int offsetY = 0;
         public static int requiredOffsetX = 0;
         public static int requiredOffsetY = 0;
+        public static StructTile[] BorderTiles = new StructTile[]
+        {
+            new StructTile()
+        };
 
         public static OneDimensionTileProvider Provider;
 
